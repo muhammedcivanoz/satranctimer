@@ -206,8 +206,17 @@
         }
 
         // Oyunu Başlat
+        let audioPlayer = null;
         function startGame() {
             if (activePlayer !== 0) return; // Zaten oyun devam ediyorsa
+            
+            // Eğer müzik henüz başlamadıysa, indirdiğimiz yerel ses dosyasını (cildir_sarki.ogg) çaldır
+            if (!audioPlayer) {
+                audioPlayer = new Audio('cildir_sarki.ogg');
+                audioPlayer.loop = true; // Şarkı bitince başa sarsın
+                audioPlayer.volume = 0.5; // Ses seviyesi %50
+                audioPlayer.play().catch(e => console.error("Ses çalınamadı:", e));
+            }
             
             // Eğer süreler sıfırlanmışsa, inputtan yeni süreyi al
             if (time1 === initialTime && time2 === initialTime) {
