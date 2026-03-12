@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Satranç Saati</title>
     <style>
         * {
@@ -25,7 +26,8 @@
             display: flex;
             width: 100%;
             height: 100%;
-            flex-direction: row; /* Yan yana */
+            flex-direction: row;
+            /* Yan yana */
         }
 
         .player {
@@ -40,6 +42,8 @@
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* Oyuncu 1 - Sol Taraf (Beyaz) */
@@ -57,12 +61,14 @@
         /* Aktif oyuncu efekti */
         .active {
             box-shadow: inset 0 0 50px rgba(46, 204, 113, 0.5);
-            background-color: #2ecc71 !important; /* Yeşil yansıma */
+            background-color: #2ecc71 !important;
+            /* Yeşil yansıma */
             color: white !important;
         }
 
         .losing-time {
-            color: #e74c3c !important; /* 10 saniye kala kırmızı */
+            color: #e74c3c !important;
+            /* 10 saniye kala kırmızı */
         }
 
         .game-over {
@@ -132,15 +138,55 @@
             border: none;
             text-align: center;
         }
+
+        /* Responsive & Mobil Tasarım */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .container {
+                flex-direction: column;
+            }
+            #player1 {
+                transform: rotate(180deg);
+            }
+            .player {
+                font-size: 5.5rem;
+            }
+            .controls {
+                width: 90%;
+                max-width: 350px;
+                padding: 15px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            .hint {
+                font-size: 0.85rem;
+                bottom: 10px;
+            }
+            .time-setup {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .player {
+                font-size: 6rem;
+            }
+            .controls {
+                transform: translate(-50%, -50%) scale(0.85);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <div id="player1" class="player" onclick="switchTurnTo(2)">
+        <div id="player1" class="player" onpointerdown="event.preventDefault(); switchTurnTo(2)">
             <div id="time1">05:00</div>
         </div>
-        
-        <div id="player2" class="player" onclick="switchTurnTo(1)">
+
+        <div id="player2" class="player" onpointerdown="event.preventDefault(); switchTurnTo(1)">
             <div id="time2">05:00</div>
         </div>
     </div>
@@ -149,7 +195,8 @@
     <div class="controls" id="controlPanel">
         <!-- Satranç Modu Seçimi -->
         <div style="color: white; font-weight: bold; margin-bottom: 5px;">Satranç Modu</div>
-        <select id="gameMode" onchange="updateMode()" style="padding: 8px; font-size: 1rem; border-radius: 5px; cursor: pointer;">
+        <select id="gameMode" onchange="updateMode()"
+            style="padding: 8px; font-size: 1rem; border-radius: 5px; cursor: pointer;">
             <option value="custom">Özel Süre</option>
             <option value="1">Bullet (1 Dk)</option>
             <option value="3">Blitz (3 Dk)</option>
@@ -158,7 +205,7 @@
             <option value="15">Rapid (15 Dk)</option>
             <option value="30">Klasik (30 Dk)</option>
         </select>
-        
+
         <div class="time-setup" id="customTimeSetup">
             <label>Süre:</label>
             <label for="minutes" style="font-size: 0.9rem;">Dk</label>
@@ -167,10 +214,12 @@
             <label for="seconds" style="font-size: 0.9rem;">Sn</label>
             <input type="number" id="seconds" value="0" min="0" max="59">
         </div>
-        
-        <div class="volume-setup" style="display: flex; gap: 10px; color: white; flex-direction: column; align-items: center; margin-top: 10px; margin-bottom: 10px;">
+
+        <div class="volume-setup"
+            style="display: flex; gap: 10px; color: white; flex-direction: column; align-items: center; margin-top: 10px; margin-bottom: 10px;">
             <label for="volumeControl" style="font-size: 1rem;">Müzik Sesi</label>
-            <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)" style="width: 100px;">
+            <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="0.5"
+                oninput="changeVolume(this.value)" style="width: 100px;">
         </div>
 
         <button onclick="startGame()">BAŞLAT</button>
@@ -211,7 +260,7 @@
                 secondsInput.value = 0;
             }
             // Anında değişikliği ekrana yansıtmak için süreleri resetle
-            resetGame(); 
+            resetGame();
         }
 
         // Başlangıçta custom kısmını gizle (çünkü varsayılan 5dk Blitz)
@@ -224,7 +273,7 @@
             let totalSeconds = Math.floor(ms / 1000);
             let minutes = Math.floor(totalSeconds / 60);
             let seconds = totalSeconds % 60;
-            
+
             // 10 saniyenin altındaysa saliseleri de göster
             if (ms < 10000) {
                 let tenths = Math.floor((ms % 1000) / 100);
@@ -251,17 +300,17 @@
         let audioPlayer = null;
         function startGame() {
             if (activePlayer !== 0) return; // Zaten oyun devam ediyorsa
-            
+
             // Eğer müzik henüz başlamadıysa, indirdiğimiz yerel ses dosyasını (cildir_sarki.ogg) çaldır
             if (!audioPlayer) {
                 audioPlayer = new Audio('cildir_sarki.ogg');
                 audioPlayer.loop = true; // Şarkı bitince başa sarsın
                 audioPlayer.volume = document.getElementById('volumeControl').value;
             }
-            
+
             // Başla / devam et tıklandığında şarkıyı da çal
             audioPlayer.play().catch(e => console.error("Ses çalınamadı:", e));
-            
+
             // Eğer süreler sıfırlanmışsa, inputtan yeni süreyi al
             if (time1 === initialTime && time2 === initialTime) {
                 let mins = parseInt(minutesInput.value) || 0;
@@ -273,9 +322,9 @@
             }
 
             // Varsayılan olarak Oyuncu 1 başlar
-            activePlayer = 1; 
+            activePlayer = 1;
             pauseBtn.style.display = 'block';
-            
+
             lastUpdateTime = performance.now();
             timerInterval = requestAnimationFrame(updateTimer);
             updateUIActiveState();
@@ -337,15 +386,15 @@
 
         // Tıklanan oyuncunun saati çalışacak şekilde ayarla. 
         function switchTurnTo(nextPlayer) {
-             if (time1 <= 0 || time2 <= 0) return;
-             
-             if (activePlayer === 0) {
-                 startGame();
-                 activePlayer = nextPlayer; // Baştan kim başlasın ayarı
-             } else {
-                 activePlayer = nextPlayer;
-             }
-             updateUIActiveState();
+            if (time1 <= 0 || time2 <= 0) return;
+
+            if (activePlayer === 0) {
+                startGame();
+                activePlayer = nextPlayer; // Baştan kim başlasın ayarı
+            } else {
+                activePlayer = nextPlayer;
+            }
+            updateUIActiveState();
         }
 
         // Arka Plan Renklerini Güncelle
@@ -364,7 +413,7 @@
         function endGame(loser) {
             activePlayer = 0;
             cancelAnimationFrame(timerInterval);
-            
+
             p1Div.classList.remove('active');
             p2Div.classList.remove('active');
 
@@ -400,7 +449,7 @@
         function resetGame() {
             activePlayer = 0;
             cancelAnimationFrame(timerInterval);
-            
+
             let mins = 0;
             let secs = 0;
 
@@ -415,20 +464,20 @@
             initialTime = (mins * 60 + secs) * 1000;
             time1 = initialTime;
             time2 = initialTime;
-            
+
             p1Div.classList.remove('game-over', 'active');
             p2Div.classList.remove('game-over', 'active');
-            
+
             document.getElementById('hintText').innerHTML = "Devam etmek / Sıra değiştirmek için <strong>SPACE</strong> tuşuna basın.";
             pauseBtn.style.display = 'none';
-            
+
             // Sıfırlanınca şarkıyı sıfırla ve durdur
             if (audioPlayer) {
                 audioPlayer.pause();
                 audioPlayer.currentTime = 0;
                 audioPlayer = null; // Tekrar başladığında yeniden başlatılabilir
             }
-            
+
             updateDisplays();
         }
 
@@ -440,7 +489,7 @@
         }
 
         // Klavye Eventi (SPACE tuşu ile geçiş)
-        document.addEventListener('keydown', function(event) {
+        document.addEventListener('keydown', function (event) {
             if (event.code === 'Space') {
                 event.preventDefault(); // Sayfa kaymasını engelle
                 switchTurn();
@@ -451,4 +500,5 @@
         updateDisplays();
     </script>
 </body>
+
 </html>
