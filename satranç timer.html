@@ -147,10 +147,32 @@
 
     <!-- Orta Kontrol Paneli -->
     <div class="controls" id="controlPanel">
-        <div class="time-setup">
-            <label for="minutes">Süre (Dk):</label>
-            <input type="number" id="minutes" value="5" min="1" max="180">
+        <!-- Satranç Modu Seçimi -->
+        <div style="color: white; font-weight: bold; margin-bottom: 5px;">Satranç Modu</div>
+        <select id="gameMode" onchange="updateMode()" style="padding: 8px; font-size: 1rem; border-radius: 5px; cursor: pointer;">
+            <option value="custom">Özel Süre</option>
+            <option value="1">Bullet (1 Dk)</option>
+            <option value="3">Blitz (3 Dk)</option>
+            <option value="5" selected>Blitz (5 Dk)</option>
+            <option value="10">Rapid (10 Dk)</option>
+            <option value="15">Rapid (15 Dk)</option>
+            <option value="30">Klasik (30 Dk)</option>
+        </select>
+        
+        <div class="time-setup" id="customTimeSetup">
+            <label>Süre:</label>
+            <label for="minutes" style="font-size: 0.9rem;">Dk</label>
+            <input type="number" id="minutes" value="5" min="0" max="180">
+            <span style="color:white; font-weight:bold;">:</span>
+            <label for="seconds" style="font-size: 0.9rem;">Sn</label>
+            <input type="number" id="seconds" value="0" min="0" max="59">
         </div>
+        
+        <div class="volume-setup" style="display: flex; gap: 10px; color: white; flex-direction: column; align-items: center; margin-top: 10px; margin-bottom: 10px;">
+            <label for="volumeControl" style="font-size: 1rem;">Müzik Sesi</label>
+            <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)" style="width: 100px;">
+        </div>
+
         <button onclick="startGame()">BAŞLAT</button>
         <button onclick="pauseGame()" id="pauseBtn" style="display:none; background-color: #f39c12;">DURAKLAT</button>
         <button onclick="resetGame()" style="background-color: #e74c3c;">SIFIRLA</button>
@@ -174,6 +196,26 @@
         const t2Display = document.getElementById('time2');
         const pauseBtn = document.getElementById('pauseBtn');
         const minutesInput = document.getElementById('minutes');
+        const secondsInput = document.getElementById('seconds');
+        const gameModeSelect = document.getElementById('gameMode');
+        const customTimeSetup = document.getElementById('customTimeSetup');
+
+        // Satranç modu değiştiğinde UI güncelle
+        function updateMode() {
+            const mode = gameModeSelect.value;
+            if (mode === 'custom') {
+                customTimeSetup.style.display = 'flex';
+            } else {
+                customTimeSetup.style.display = 'none';
+                minutesInput.value = mode;
+                secondsInput.value = 0;
+            }
+            // Anında değişikliği ekrana yansıtmak için süreleri resetle
+            resetGame(); 
+        }
+
+        // Başlangıçta custom kısmını gizle (çünkü varsayılan 5dk Blitz)
+        customTimeSetup.style.display = 'none';
 
         // Zamanı biçimlendirme fonksiyonu (MM:SS)
         function formatTime(ms) {
@@ -214,14 +256,17 @@
             if (!audioPlayer) {
                 audioPlayer = new Audio('cildir_sarki.ogg');
                 audioPlayer.loop = true; // Şarkı bitince başa sarsın
-                audioPlayer.volume = 0.5; // Ses seviyesi %50
-                audioPlayer.play().catch(e => console.error("Ses çalınamadı:", e));
+                audioPlayer.volume = document.getElementById('volumeControl').value;
             }
+            
+            // Başla / devam et tıklandığında şarkıyı da çal
+            audioPlayer.play().catch(e => console.error("Ses çalınamadı:", e));
             
             // Eğer süreler sıfırlanmışsa, inputtan yeni süreyi al
             if (time1 === initialTime && time2 === initialTime) {
-                let mins = parseInt(minutesInput.value) || 5;
-                initialTime = mins * 60 * 1000;
+                let mins = parseInt(minutesInput.value) || 0;
+                let secs = parseInt(secondsInput.value) || 0;
+                initialTime = (mins * 60 + secs) * 1000;
                 time1 = initialTime;
                 time2 = initialTime;
                 updateDisplays();
@@ -356,8 +401,18 @@
             activePlayer = 0;
             cancelAnimationFrame(timerInterval);
             
-            let mins = parseInt(minutesInput.value) || 5;
-            initialTime = mins * 60 * 1000;
+            let mins = 0;
+            let secs = 0;
+
+            const mode = gameModeSelect.value;
+            if (mode === 'custom') {
+                mins = parseInt(minutesInput.value) || 0;
+                secs = parseInt(secondsInput.value) || 0;
+            } else {
+                mins = parseInt(mode) || 5;
+            }
+
+            initialTime = (mins * 60 + secs) * 1000;
             time1 = initialTime;
             time2 = initialTime;
             
@@ -375,6 +430,13 @@
             }
             
             updateDisplays();
+        }
+
+        // Şarkının ses ayarı fonksiyonu
+        function changeVolume(value) {
+            if (audioPlayer) {
+                audioPlayer.volume = value;
+            }
         }
 
         // Klavye Eventi (SPACE tuşu ile geçiş)
