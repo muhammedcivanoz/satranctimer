@@ -331,6 +331,12 @@
 
             document.getElementById('hintText').innerHTML = "Süre bitti! Yeni oyun için 'Sıfırla'ya basın.";
             pauseBtn.style.display = 'none';
+
+            // Şarkı devam ediyorsa durdur
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0; // Başa sar
+            }
         }
 
         // Oyunu Duraklat
@@ -338,6 +344,11 @@
             activePlayer = 0;
             updateUIActiveState();
             pauseBtn.style.display = 'none';
+
+            // Duraklatıldığında şarkı da dursun (Sıra değişmeden duraklatırsak)
+            if (audioPlayer) {
+                audioPlayer.pause();
+            }
         }
 
         // Oyunu Sıfırla
@@ -355,6 +366,13 @@
             
             document.getElementById('hintText').innerHTML = "Devam etmek / Sıra değiştirmek için <strong>SPACE</strong> tuşuna basın.";
             pauseBtn.style.display = 'none';
+            
+            // Sıfırlanınca şarkıyı sıfırla ve durdur
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                audioPlayer = null; // Tekrar başladığında yeniden başlatılabilir
+            }
             
             updateDisplays();
         }
